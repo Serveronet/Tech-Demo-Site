@@ -1,6 +1,6 @@
 # Tech Demo Site build
 
-This Node.js app for copying the contents of `src/` to the development or production site directory. Tech Demo Site for Serveronet. In build.js configure paths for your environment.
+This Node.js app is for copying the contents of `src/` to the development or production site directory. Tech Demo Site for Serveronet. In build.js configure paths for your environment.
 
 ## Prerequisites
 
