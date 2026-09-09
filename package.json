@@ -1,0 +1,16 @@
+{
+  "name": "npm-packaging-demo",
+  "version": "1.0.0",
+  "main": "dist/index.js",
+  "files": [
+    "dist/"
+  ],
+  "scripts": {
+    "dev": "node build.js dev",
+    "prod": "node build.js prod",
+    "watch": "node build.js watch"
+  },
+  "devDependencies": {
+    "fs-extra": "^11.3.6"
+  }
+}

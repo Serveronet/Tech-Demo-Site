@@ -1,0 +1,497 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <title>Tech Demo Site</title>
+  <meta name="description" content="description" />
+  <meta name="author" content="author" />
+  <meta name="keywords" content="keywords" />
+  <link rel="stylesheet" href="./css/bootstrap.min.css">
+  <link rel="stylesheet" href="./css/stylesheet.css" type="text/css" />
+  <link rel="icon" type="image/x-icon" href="./favicon.ico">
+  <script src="./js/axios.min.js"></script>
+  <link type="text/css" rel="stylesheet" href="./css/bootstrap-vue.min.css" />
+  <link rel="stylesheet" href="./css/noty.min.css">
+  <script src="./js/noty.min.js"></script>
+</head>
+
+<body class="container">
+  <div id="TechDemoApp">
+    <div class="h1">
+      <a class="m-1" href="./">
+        <img width="30px" src="./logo.png" /></a>
+      Serveronet Tech Demo Site
+
+      <div class="h6"><span class="opacity-75" style="font-size: x-small;">
+          <code>{{site_title}} | Ver: 37</code></span>
+      </div>
+    </div>
+    <br />
+    <div class="h5">
+      This is a sample web site showing how Sites behave in the Serveronet
+    </div>
+    <ul class="list-group">
+      <li class="list-group-item border border-1 shadow-sm">
+        <div class="h3">HTML and Javascript</div>
+        <div><i>{{jsContent}}</i></div>
+        Site files were retrieved from other hosting peers or IPFS and validated before serving to the visitor
+      </li>
+
+      <p id="database"></p>
+      <li class="list-group-item mt-3  border border-1 shadow-sm">
+        <div class="h3">Site's Database</div>
+        Site can have a database. Site owner will define sql-like ddls to create and upgrade database versions. Hosting
+        Peers will maintain replicas.
+        <br />
+        Database create initial configuration for this site:
+        <input class="form-control" v-model="on_Create_Database" />
+      </li>
+
+      <p id="post"></p>
+      <li class="list-group-item mt-3 border border-1 shadow-sm">
+        <div class="h3">Post message to the Backend</div>
+        <br />
+        Send a Post to the Backend.
+        <span class="text-secondary p-1" v-show="entity_id">Entity ID: <span class="fw-bold">{{entity_id}}</span></span>
+        <div class="input-group mb-2 p-0">
+          <span class="input-group-text" id="basic-addon1">Title: </span>
+          <input type="text" class="form-control" name="title"
+            :disabled="! isAuthenticated || ! can_post_to_table" id="title" v-model="title" placeholder="Title">
+        </div>
+        <div class="input-group mb-2 p-0">
+          <span class="input-group-text" id="basic-addon1">Post Body:</span>
+          <textarea class="form-control" name="body" :disabled="! isAuthenticated || ! can_post_to_table"
+            v-model="body" placeholder="Body of a post"></textarea>
+        </div>
+        <div class="input-group mb-2 p-0">
+        </div>
+        <a class="btn btn-danger me-2" v-show="!isAuthenticated" :disabled="isAuthenticated" href="./login">
+          <span>{{isAuthenticated===null ? '⌛' : 'Site Login'}}</span>
+        </a>
+        <button class="btn btn-light me-2" title="{{identity_visitor_id }}" v-show="isAuthenticated">Logged In as:
+          {{getShortAddress(identity_visitor_id)}}
+        </button>
+        <button class="btn btn-primary external-hook" :disabled="! isAuthenticated || ! can_post_to_table"
+          @click="postRecord()" type="button">{{entity_id ? 'UPDATE' : 'POST'}}</button>
+        <br>
+        <span class="">Can post:</span> <span class="fw-bold">{{ tfynu(can_post_to_table)}} </span>
+        <span class="ms-1"> Reason:</span> <span class="fw-bold">{{ posts_to_table_reason }}</span><br />
+        <div class="input-group mb-2 p-0">
+          <span class="border border-dark bg-light rounded overflow-auto text-dark lh-1 p-2"
+            v-show="postMessageResult != ''">{{postMessageResult}}</span>
+          <span class="border border-success rounded p-1 m-1 border-2"
+            v-show="postMessageMarker != ''">{{postMessageMarker}}</span>
+        </div>
+      </li>
+
+      <p id="searching"></p>
+      <li class="list-group-item mt-3 border border-1 shadow-sm">
+        <a class="h3 text-decoration-none text-dark" href="#searching">Searches</a>
+        <br />
+        <br />
+        <div>Search terms will be sent to hosting peers or used locally when hosting this site.</div>
+        <div>Returned data will be validated (logically and cryptographically), refiltered and returned here.</div>
+        <div>Here you can search in post's <i>title</i> or <i>body</i></div>
+        <span class="m-1 badge bg-danger">{{foundRecords.length}}</span>
+        <div v-for="record in foundRecords">
+          <div class="border border-success bg-light p-1 mb-1 rounded overflow-auto">{{record._sn_entity_id}} |
+            {{record.title}} | {{record.body}}</div>
+        </div>
+        <div class="input-group mb-2 mt-1">
+          <button class="btn btn-outline-secondary" @click="search(false)" type="button">Search</button>
+          <span class="m-1" v-show="operationInProgress">⌛</span>
+          <input type="text" class="form-control" name="search" id="search" v-model="search_text"
+            placeholder="Type you search" />
+        </div>
+        <span class="border border-danger rounded p-1 m-1 border-2"
+          v-show="searchResultMessage != ''">{{searchResultMessage}}</span>
+        <span class="m-1 badge bg-danger">{{foundRecords.length}}</span>
+      </li>
+
+      <p id="moderation"></p>
+      <li class="list-group-item mt-3 border border-1 shadow-sm">
+        <div class="h3">How to control allowed visitors</div>
+        <br />
+        <div>Site owner can appoint a site admin or issue a <b>grant record</b> for the specified visitor to grant edit
+          access to a table. </div>
+        <div>Later the Site Owner can mark a grant record as deleted.</div>
+        <div>Validity of access will be checked periodically during the maintenance. (Enforced by the Serveronet client)
+        </div>
+      </li>
+
+      <p id="site_api"></p>
+      <li class="list-group-item mt-3 border border-1 shadow-sm">
+        <div class="h3">Functional enpoints</div>
+        Every Serveronet Site has following endpoints. See this site's script for usage examples or
+        <a class="" target="_blank" :href="siteRoot+'sn_client_resources/site_api_docs/index.html'">API
+          Documentation</a>
+        <br />
+        <br />
+        <ul>
+          <li><var>query_endpoint</var> - Endpoint for user data queries. You can use a subset of sql DQLs to retrieve
+            the needed records.</li>
+          <li><var>visitor_record_create</var> - Backend to create new record. Requires authenticated visitor.</li>
+          <li><var>visitor_record_update</var> - Backend update a record. Requires authenticated visitor.</li>
+          <li><var>visitor_files</var> - Listing of visitor files. Requires authenticated visitor.</li>
+          <li><var>visitor_file_upload</var> - Upload Visitor's file.</li>
+          <li><var>visitor_file_delete</var> - Enpoint to mark Visitor File as deleted.</li>
+          <hr />
+          <li><var>check_can_post_to_table</var> - Check if Visitor can post to a specified table.</li>
+          <li><var>check_can_upload</var> - Check if Visitor can upload files.</li>
+          <hr />
+          <li><var>login</var> - Route to redirect visitor if authentication is required</li>
+          <li><var>logout</var> - Logout from Site</li>
+          <li><var>is_authenticated</var> - Enpoint to quickly check if current visitor is authenticated</li>
+          <li><var>get_visitor_state</var> - Site can verify if current user can post and upload files</li>
+          <li><var>csrf-cookie</var> - Enpoint to regerate CSRF cookie. Just request it.</li>
+          <hr />
+          <li><var>site_state</var> - Enpoint to quickly check Site details</li>
+          <li><var>client_config</var> - Enpoint to check configuration of the Serveronet client</li>
+        </ul>
+        <br />
+      </li>
+
+      <p id="query"></p>
+      <li class="list-group-item mt-3 border border-1 shadow-sm">
+        <a class="h3 text-decoration-none text-dark" href="#query">Queries</a>
+        <br />
+        <br />
+        <div>Database queries will be sent to hosting peers or executed locally.</div>
+        <div><b>Site hosting state</b>: {{siteState?.is_hosted ? 'Hosting' : 'Not Hosting'}} </div>
+        <div>Last update timestamp: {{siteState?.visitor_records_replication_end_ts}}</div>
+        <br />
+        <a class="btn btn-outline-primary mt-2" @click="executeQuery()" type="button" href="#query">Show filtered
+          records</a>
+        <a class="btn btn-outline-secondary mt-2 ms-1" @click="showCount()" type="button" href="#query">Show Count</a>
+        <span class="m-1" v-show="operationInProgress">⌛</span>
+        <br />
+        <br />
+        <span class="m-1 badge bg-secondary">{{queryRecords.length}}</span>
+        <div class="border border-danger rounded p-1 m-1 border-2" v-show="queryResultMessage != ''">
+          {{queryResultMessage}}</div>
+        <span class="text-secondary">{{sql}}</span>
+        <br />
+        <div v-for="value in querySectionParams">
+          <button type="button" :class="getButtonCss(value.key)" @click="toggleQuery(value.key)"></button>
+          <span class="ms-1"></span> {{value.key}} - <var>{{value.queryParam}}</var>
+          <br />
+        </div>
+        <div v-show="queryRecords.length > 0" class="mt-2">Records Found:</div>
+        <div v-for="record in queryRecords" :key="record._sn_entity_id">
+  <div class="card border-success bg-light mb-3 shadow-sm">
+    <div class="card-body p-3">
+      
+      <!-- Top Row: Icons (Left) | Date/ID (Right) -->
+      <div class="d-flex justify-content-between align-items-start mb-2">
+        
+        <!-- Left: Edit/Delete Icons -->
+        <div class="btn-group btn-group-sm">
+          <!-- Edit Icon -->
+          <a v-show="record.editable" 
+             @click="restoreRecordForEdit(record)" 
+             href="#post"
+             class="btn btn-outline-secondary border-0 text-decoration-none" 
+             title="Edit">
+            ✏️
+          </a>
+          <span v-show="!record.editable" 
+                class="p-1 border-0 text-decoration-none opacity-50" 
+                title="Record not owned">
+            ✏️
+          </span>
+
+          <!-- Delete Icon -->
+          <a v-show="record.editable" 
+             @click="deleteRecord(record, $event)" 
+             href="#query"
+             class="btn btn-outline-danger border-0 text-decoration-none" 
+             title="Delete">
+            🗑️
+          </a>
+          <span v-show="!record.editable" 
+                class="p-1 border-0 text-decoration-none opacity-50" 
+                title="Record not owned">
+            🗑️
+          </span>
+        </div>
+
+        <!-- Right: Date / Entity ID -->
+        <small class="text-muted fw-bold">
+          {{ formatDate(record._sn_entity_id) }}
+        </small>
+      </div>
+
+      <!-- Middle: Title (Full Width) -->
+      <h6 class="card-title w-100 mb-1 text-dark">
+        {{ record.title }}
+      </h6>
+
+      <!-- Bottom: Body (Full Width) -->
+      <p class="card-text w-100 text-secondary mb-0">
+        {{ record.body }}
+      </p>
+      
+    </div>
+  </div>
+</div>
+
+        <!-- <div v-for="record in queryRecords">
+          <div class="border border-success bg-light p-1 mb-1 rounded overflow-auto">
+            <a v-show="record.editable" @click="restoreRecordForEdit(record)" href="#post"
+              class="me-1 text-decoration-none">✏</a>
+            <span class="text-decoration-line-through" v-show="!record.editable" title="Record not owned">✏</span>
+
+            <a v-show="record.editable" @click="deleteRecord(record, $event)" href="#query"
+              class="text-decoration-none">🗑</a>
+            <span class="text-decoration-line-through" v-show="!record.editable" title="Record not owned">🗑</span>
+            
+            {{formatDate(record._sn_entity_id)}} |  {{record.title}} | {{record.body}} | {{record._sn_entity_id}}
+          </div>
+        </div> -->
+        <br />
+        Query parameters:
+        <textarea name="" id="" class="font-monospace text-dark" readonly style="width:100%;" rows="5"
+          :value="inlineStringify(backendQueryParameters)"></textarea>
+        <div class="">
+          <button type="button"
+            :class="[prettify === undefined ? 'btn btn-outline-success btn-sm' : '', prettify !== undefined ? 'btn btn-outline-danger btn-sm' : '']"
+            @click="togglePrettify()" id="Prettify">Prettify</button>
+        </div>
+      </li>
+
+      <p id="grant_records"></p>
+      <li class="list-group-item mt-3 border border-1 shadow-sm">
+        <a class="h3 text-decoration-none text-dark" href="#grant_records">Grant Records</a>
+        <div>Site Admin or Owner can create grant records.</div>
+        <div>Grant Records are attached to new records as a proof that Visitor can post to a specified table or upload
+          files.</div>
+        <br />
+        <div><b>Are you a Site admin</b>: {{tfynu(is_site_admin)}}</div>
+        <br />
+        <a class="btn btn-danger me-2" v-show="!isAuthenticated" href="./login"><span>{{isAuthenticated===null ? '⌛' :
+            'Site Login'}}</span></a>
+        <br />
+        <div class="form-floating mb-3">
+          <input type="text" class="form-control" id="grantee_visitor_id" placeholder="Grantee Visitor ID"
+            :disabled="! isAuthenticated || ! is_site_admin" id="grantee_visitor_id" v-model="grantee_visitor_id">
+          <label for="grantee_visitor_id">Grantee Visitor ID:</label>
+        </div>
+        <button class="btn btn-outline-primary m-1" @click="createGrantRecord('posts')"
+          :disabled="! isAuthenticated || ! is_site_admin" type="button" href="#grant_records">Create Grant Record
+          DB</button>
+        <button class="btn btn-outline-primary m-1" @click="createGrantRecord('_sn_visitor_resource_upload')"
+          :disabled="! isAuthenticated || ! is_site_admin" type="button" href="#grant_records">Create Grant Record for
+          Uploades</button>
+      </li>
+
+      <p id="visitor_files"></p>
+      <li class="list-group-item mt-3 border border-1 shadow-sm">
+        <a class="h3 text-decoration-none text-dark" href="#visitor_files">Visitor Files</a>
+        <br />
+        <br />
+        <div>This Sample site allows visitors to upload their images.</div>
+        <div>Only allowed visitors will be able to upload.</div>
+        <div>Uploaded images will be replicated to the hosting Peers.</div>
+        <br />
+        <a class="btn btn-danger me-2" v-show="!isAuthenticated" href="./login"><span>{{isAuthenticated===null ? '⌛' :
+            'Site Login'}}</span></a>
+        <div class="fst-italic" class="italic" v-show="isAuthenticated">Visitor can upload files:
+          <b>{{tfynu(can_upload_files)}}</b> {{visitorState?.upload_files_reason ? '('+ visitorState?.upload_files_reason +')'
+          : '' }}
+        </div>
+        <div class="fst-italic" v-show="isAuthenticated">Visitor has <b>{{visitorFiles.length}}</b>
+          files already uploaded. Total: <b>{{totalUploadedFiles()}}</b> KB</div>
+        <div v-show="file_size > 0" class="fst-italic">Current file size is {{Math.round(file_size / 1024)}} KB</div>
+        <br />
+        <br />
+        <br />
+        <label for="image">2. Pick an Image:</label>
+        <input type="file" class="form-control" accept="image/*" name="image" id="image" multiple="{{debug}}"
+          :disabled="! isAuthenticated || ! can_upload_files" @change="onImgFileLoaded()" />
+        <br />
+        <img class="imagePreview alert alert-info" id="image_preview" src="./img/baseline_image_white_48dp.png" />
+        <button type="button" class="btn btn-danger mb-3 ms-1" title="Reset Preview" @click="resetPreview()">X</button>
+        <br />
+        <button class="btn btn-primary me-1" @click="uploadFile()"
+          :disabled="! isAuthenticated || ! can_upload_files || operationInProgress">3. Upload</button>
+        <div class="border border-dark bg-light rounded overflow-auto text-dark lh-1 p-2 mt-1"
+          v-show="file_upload_result">{{file_upload_result}}</div>
+        <hr />
+        <button class="btn btn-success btn-sm mt-1 me-1" @click="getCurrentVisitorFiles();"
+          :disabled="! isAuthenticated">List Current Visitor's Files</button>
+        <button class="btn btn-secondary btn-sm mt-1" @click="getAllVisitorFiles();">All Visitor Files</button>
+        <span class="border border-light rounded pb-2 ps-1 pe-1 m-1 border-2">{{visitorFiles.length}}</span>
+        <div v-for="visitorFile in visitorFiles">
+          <button type="button" v-show="visitorFile.editable" class="btn btn-warning btn-sm mt-2 mb-2 me-2" title="Delete File"
+            @click="deleteVisitorResource(visitorFile.entity_id)">X</button>
+          <a class="" target="_blank" :href="getResourceHref(visitorFile)">File Link</a>
+          <div class="overflow-auto">{{visitorFile.original_file_name}} {{visitorFile.entity_id}}</div>
+          <div v-if="visitorFile.mime_type.startsWith('image')" class="animate-if">
+            <img :src="getResourceHref(visitorFile)" alt="" height="200px" width="200px">
+          </div>
+          <div v-if="visitorFile.mime_type.startsWith('video')" class="animate-if">
+            <video width="320" height="240" controls>
+              <source :src="getResourceHref(visitorFile)" :type="visitorFile.mime_type">
+            </video>
+          </div>
+        </div>
+        <br />
+      </li>
+
+
+      <p id="visitor_state"></p>
+      <li class="list-group-item mt-3 border border-1 shadow-sm">
+        <a class="h3 text-decoration-none text-dark" href="#visitor_state">Visitor State</a>
+        <br />
+        <br />
+        <div>Site can check status of a Visitor.</div>
+        <br />
+        <span class="fst-italic fw-bold">Your Visitor Id:</span><br />
+        <div class="overflow-auto">{{
+          visitorState?.visitor_id}}</div><br />
+        <span class="fst-italic fw-bold">Short:</span> {{ getShortAddress(visitorState?.visitor_id) }}<br />
+        <span class="fst-italic fw-bold">Is a Site admin:</span> {{ tfynu(is_site_admin) }}<br />
+        <br />
+        <span class="fw-bold">Can post new records:</span> {{ tfynu(can_post_to_table) }} <br />
+        <span class="fw-bold">Reason:</span> {{ posts_to_table_reason }}<br />
+        <br />
+        <span class="fw-bold">Can upload new files:</span> {{ tfynu(can_upload_files) }} <br />
+        <span class="fw-bold">Reason:</span> {{ upload_files_reason }}<br />
+        <br />
+        <br />
+        <a class="btn btn-danger me-2" v-show="!isAuthenticated" href="./login"><span>{{isAuthenticated===null ? '⌛' :
+            'Site Login'}}</span></a>
+        <button class="btn btn-primary"
+          @click="getVisitorState(); checkCanPostToTable(); checkCanUploadFiles(); this.innerHTML = 'checking'">Check
+          Now</button>
+      </li>
+
+      <p id="links"></p>
+      <li class="list-group-item mt-3 border border-1 shadow-sm">
+        <a class="h3 text-decoration-none text-dark" href="#links">Links</a>
+        <br />
+        <br />
+        <div>Links are relative to Visitor's Client. </div>
+        <div>The Site Owner can use helper cookies to generate links properly.</div>
+        <br />
+        <code class="h5">site_root</code> - Carries full url to current Site root path.
+        <br /><span class="fst-italic"> Example:</span> <br /> https://yoursiteaddress.sn-client.example.com/
+        <br />
+        <br />
+        <span class="fst-italic">This Client:</span><br />
+        <div class="overflow-auto">{{siteRoot}}</div>
+        <br />
+        <br />
+        <code class="h5">client_root</code> - Carries full url to the root of this client.
+        <br /><span class="fst-italic">Example:</span> <br />https://sn-client.example.com/
+        <br />
+        <br />
+        <span class="fst-italic overflow-auto">This Client:</span> <br />
+        <div class="overflow-auto">{{clientRoot}}</div>
+        <br />
+        <br />
+        <code class="h5">site_id</code> - carries a Site ID of a current Site. Even when site is accessed by a domain,
+        actual site
+        id is available.
+        <br /><span class="fst-italic">Example:</span> <br /> bgxi6...
+        <br />
+        <br />
+        <span class="fst-italic">This Client:</span> <br />
+        <div class="overflow-auto">{{siteId}}</div>
+        <br />
+        <br />
+        <br />
+      </li>
+
+      <p id="server_events"></p>
+      <li class="list-group-item mt-3 border border-1 shadow-sm">
+        <a class="h3 text-decoration-none text-dark" href="#server_events">Server Events</a>
+        <br />
+        <br />
+        <div>You can consume stream of events that this Serveronet Client will broadcast for a site.</div>
+        <br />
+        Events will show here and in a pop-up.
+        <br />
+        Events are available for 60 seconds after occuring.
+        <br />
+        Post a record and Server will notify connected visitors soon after.
+        <br />
+        <br />
+        Documentation
+        <br />
+        <a href="https://developer.mozilla.org/en-US/docs/Web/API/EventSource">EventSource</a>
+        <br />
+        <br />
+        <div class="bg-secondary text-light p-2" id='events_box'></div>
+        <br />
+      </li>
+
+
+      <div class="working" id="working" v-show="operationInProgress">⌛ Please wait...</div>
+
+
+      <hr>
+      <!-- //TOD_PRELIVE V decide what how to handle -->
+      <p id="sample_db"></p>
+      <li class="list-group-item mt-3 border border-1 shadow-sm" v-show="debug">
+        <a class="h3 text-decoration-none text-dark" href="#sample_db">(Dev) Sample Database</a>
+        <div>Populate local database with sample records</div>
+        <br />
+        <a class="btn btn-danger me-2" v-show="!isAuthenticated" href="./login"><span>{{isAuthenticated===null ? '⌛' :
+            'Site Login'}}</span></a>
+        <label for="populateOn">Populate On</label>
+        <input type="checkbox" name="populateOn" v-model="populateOn" id="populateOn" class="m-2">
+        <label for="parallel">Parallel</label>
+        <input type="checkbox" name="parallel" v-model="parallel" id="parallel" class="m-2">
+        <div>Delay:</div>
+        <input type="text" class="form-control" name="delay" id="delay" v-model="delay" placeholder="delay">
+        maximumPopulateCount:
+        <input type="text" class="form-control" name="maximumPopulateCount" id="maximumPopulateCount"
+          v-model="maximumPopulateCount" placeholder="maximumPopulateCount">
+        <br>
+        <button class="btn btn-outline-primary m-1" @click="populateLocalDb()" type="button" href="#sample_db">Populate
+          Local DB</button>
+        <div class="btn btn-outline-danger" v-show="populateLocalDbButtonDisabled">Populated</div>
+        <br />
+        <div class="input-group mb-2 p-0">
+          <span class="border border-dark bg-light rounded overflow-auto text-dark lh-1 p-2"
+            v-show="postMessageResult != ''">{{postMessageResult}}</span>
+          <span class="btn btn-outline-info" v-show="postMessageMarker != ''">{{postMessageMarker}}</span>
+          <div><i></i></div>
+        </div>
+      </li>
+
+      <p id="image_performance_section"></p>
+      <li class="list-group-item mt-3 border border-1 shadow-sm" v-show="debug">
+        <div class="h3">(Dev) Image performance section</div>
+        <a class="btn btn-danger me-2 text-dark" href="#visitor_files">Go up to Visitor files</a>
+        <br />
+        <br />
+        <button class="btn btn-secondary btn-sm mt-1" @click="getAllVisitorFiles();">All Visitor Files in grid</button>
+        <span class="border border-light rounded pb-2 ps-1 pe-1 m-1 border-2">{{visitorFiles.length}}</span>
+        <button class="btn btn-primary btn-sm mt-1" @click="batchUploadFiles();">Batch Upload using Visitor Files
+          picker</button>
+        <div class="m-1" style="display: flex; flex-wrap: wrap;">
+          <div v-for="visitorFile in visitorFiles">
+            <div v-if="visitorFile.mime_type.startsWith('image')" class="animate-if">
+              <img :src="genVisitorResourcePath(visitorFile)" alt="" height="200px" width="200px">
+            </div>
+          </div>
+        </div>
+      </li>
+
+    </ul>
+
+    <button class="btn btn-light-outline m-2 text-white-50" @click="debug = !debug">DEBUG: {{tfynu(debug)}}</button>
+
+  </div>
+
+  <script src="./js/vue.global.js" type="text/javascript"></script>
+
+  <script src="./js/script-vue.js" type="text/javascript"></script>
+
+</body>
+
+</html>

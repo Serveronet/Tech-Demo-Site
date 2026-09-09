@@ -1,0 +1,33 @@
+body {
+  background: rgb(2, 0, 36);
+  background: linear-gradient(90deg, rgba(2, 0, 36, 1) 0%, rgba(104, 121, 9, 0.3349672632724965) 0%, rgba(0, 212, 255, 0.48062552657781865) 100%);
+  color: rgb(88, 88, 88);
+}
+
+:popover-open {
+  width: 300px;
+  height: 200px;
+  padding: 0 10px;
+  border-radius: 10px;
+}
+
+
+::backdrop {
+  backdrop-filter: blur(6px);
+}
+
+.working {
+  position: fixed;
+  bottom: 1em;
+  height: 1em;
+  margin: 1em;
+  padding-bottom: 2em;
+  left: 1em;
+  right: 1em;
+  /* background-color: antiquewhite; */
+  width: 100%;
+  background-color: #f8f9fa;
+  text-align: center;
+  box-shadow: 0 -2px 5px rgba(0, 0, 0, 0.1);
+}
+

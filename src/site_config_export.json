@@ -1,0 +1,91 @@
+{
+    "trusted_Site_Peers": [],
+    "prefered_Trackers": [],
+    "site_Admin_Signers": "",
+    "site_Requires_Authentication": false,
+    "single_Page_Application": false,
+    "allow_Visitor_Files": true,
+    "site_Has_Database": true,
+    "db_Schema_Versions": [
+        {
+            "tableCreates": {
+                "posts": {
+                    "body": {
+                        "datatype": "string",
+                        "nullable": true
+                    },
+                    "body_short": {
+                        "datatype": "string",
+                        "nullable": true
+                    },
+                    "pinned": {
+                        "datatype": "integer",
+                        "default": 0,
+                        "nullable": true
+                    },
+                    "title": {
+                        "datatype": "string",
+                        "nullable": true
+                    }
+                },
+                "registered_visitors": {
+                    "alias": {
+                        "datatype": "string",
+                        "nullable": true
+                    },
+                    "visitor_id": {
+                        "datatype": "string",
+                        "nullable": true
+                    }
+                },
+                "tmp_table": {
+                    "col1": {
+                        "datatype": "string",
+                        "nullable": true
+                    }
+                }
+            },
+            "version_number": 0
+        },
+        {
+            "columnAlters": {
+                "posts": {
+                    "author": {
+                        "datatype": "string",
+                        "default": "Unknown",
+                        "nullable": true
+                    }
+                }
+            },
+            "indexCreates": {
+                "posts": [
+                    "pinned"
+                ]
+            },
+            "version_number": 1
+        },
+        {
+            "columnAlters": {
+                "posts": {
+                    "newcol": {
+                        "datatype": "string"
+                    }
+                }
+            },
+            "version_number": 2
+        }
+    ],
+    "show_Adults_Only_Gate": false,
+    "list_Providers": [
+        {
+            "channel": "database",
+            "column_key": "visitor_id",
+            "column_value": "visitor_id",
+            "data_type": "visitors",
+            "description": "List of registered Visitors",
+            "table": "registered_visitors",
+            "tag": "Visitors"
+        }
+    ],
+    "inject_Feeling_Library": true
+}
