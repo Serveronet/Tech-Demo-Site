@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 
 <head>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -18,20 +18,18 @@
 </head>
 
 <body class="container">
-  <div id="TechDemoApp">
-    <div class="h1">
-      <a class="m-1" href="./">
-        <img width="30px" src="./logo.png" /></a>
-      Serveronet Tech Demo Site
-
-      <div class="h6"><span class="opacity-75" style="font-size: x-small;">
-          <code>{{site_title}} | Ver: 37</code></span>
+  <div id="TechDemoApp" class="pb-5">
+    <header class="d-flex align-items-center gap-3 py-4 mb-2 border-bottom">
+      <a href="./" class="flex-shrink-0">
+        <img width="36" height="44" src="./logo.png" class="shadow-sm" alt="Serveronet logo" /></a>
+      <div>
+        <div class="h1 mb-0 fw-semibold text-dark">Serveronet Tech Demo Site</div>
+        <div class="text-secondary small"><code>{{site_title}} | Ver: 37</code></div>
       </div>
-    </div>
-    <br />
-    <div class="h5">
+    </header>
+    <p class="lead text-secondary mt-4 mb-4">
       This is a sample web site showing how Sites behave in the Serveronet
-    </div>
+    </p>
     <ul class="list-group">
       <li class="list-group-item border border-1 shadow-sm">
         <div class="h3">HTML and Javascript</div>
@@ -39,8 +37,7 @@
         Site files were retrieved from other hosting peers or IPFS and validated before serving to the visitor
       </li>
 
-      <p id="database"></p>
-      <li class="list-group-item mt-3  border border-1 shadow-sm">
+      <li id="database" class="list-group-item border border-1 shadow-sm">
         <div class="h3">Site's Database</div>
         Site can have a database. Site owner will define sql-like ddls to create and upgrade database versions. Hosting
         Peers will maintain replicas.
@@ -49,8 +46,7 @@
         <input class="form-control" v-model="on_Create_Database" />
       </li>
 
-      <p id="post"></p>
-      <li class="list-group-item mt-3 border border-1 shadow-sm">
+      <li id="post" class="list-group-item border border-1 shadow-sm">
         <div class="h3">Post message to the Backend</div>
         <br />
         Send a Post to the Backend.
@@ -86,8 +82,7 @@
         </div>
       </li>
 
-      <p id="searching"></p>
-      <li class="list-group-item mt-3 border border-1 shadow-sm">
+      <li id="searching" class="list-group-item border border-1 shadow-sm">
         <a class="h3 text-decoration-none text-dark" href="#searching">Searches</a>
         <br />
         <br />
@@ -110,8 +105,7 @@
         <span class="m-1 badge bg-danger">{{foundRecords.length}}</span>
       </li>
 
-      <p id="moderation"></p>
-      <li class="list-group-item mt-3 border border-1 shadow-sm">
+      <li id="moderation" class="list-group-item border border-1 shadow-sm">
         <div class="h3">How to control allowed visitors</div>
         <br />
         <div>Site owner can appoint a site admin or issue a <b>grant record</b> for the specified visitor to grant edit
@@ -121,8 +115,7 @@
         </div>
       </li>
 
-      <p id="site_api"></p>
-      <li class="list-group-item mt-3 border border-1 shadow-sm">
+      <li id="site_api" class="list-group-item border border-1 shadow-sm">
         <div class="h3">Functional enpoints</div>
         Every Serveronet Site has following endpoints. See this site's script for usage examples or
         <a class="" target="_blank" :href="siteRoot+'sn_client_resources/site_api_docs/index.html'">API
@@ -153,8 +146,7 @@
         <br />
       </li>
 
-      <p id="query"></p>
-      <li class="list-group-item mt-3 border border-1 shadow-sm">
+      <li id="query" class="list-group-item border border-1 shadow-sm">
         <a class="h3 text-decoration-none text-dark" href="#query">Queries</a>
         <br />
         <br />
@@ -261,8 +253,7 @@
         </div>
       </li>
 
-      <p id="grant_records"></p>
-      <li class="list-group-item mt-3 border border-1 shadow-sm">
+      <li id="grant_records" class="list-group-item border border-1 shadow-sm">
         <a class="h3 text-decoration-none text-dark" href="#grant_records">Grant Records</a>
         <div>Site Admin or Owner can create grant records.</div>
         <div>Grant Records are attached to new records as a proof that Visitor can post to a specified table or upload
@@ -286,8 +277,7 @@
           Uploades</button>
       </li>
 
-      <p id="visitor_files"></p>
-      <li class="list-group-item mt-3 border border-1 shadow-sm">
+      <li id="visitor_files" class="list-group-item border border-1 shadow-sm">
         <a class="h3 text-decoration-none text-dark" href="#visitor_files">Visitor Files</a>
         <br />
         <br />
@@ -341,8 +331,7 @@
       </li>
 
 
-      <p id="visitor_state"></p>
-      <li class="list-group-item mt-3 border border-1 shadow-sm">
+      <li id="visitor_state" class="list-group-item border border-1 shadow-sm">
         <a class="h3 text-decoration-none text-dark" href="#visitor_state">Visitor State</a>
         <br />
         <br />
@@ -368,8 +357,7 @@
           Now</button>
       </li>
 
-      <p id="links"></p>
-      <li class="list-group-item mt-3 border border-1 shadow-sm">
+      <li id="links" class="list-group-item border border-1 shadow-sm">
         <a class="h3 text-decoration-none text-dark" href="#links">Links</a>
         <br />
         <br />
@@ -405,8 +393,7 @@
         <br />
       </li>
 
-      <p id="server_events"></p>
-      <li class="list-group-item mt-3 border border-1 shadow-sm">
+      <li id="server_events" class="list-group-item border border-1 shadow-sm">
         <a class="h3 text-decoration-none text-dark" href="#server_events">Server Events</a>
         <br />
         <br />
@@ -433,9 +420,8 @@
 
 
       <hr>
-      <!-- //TOD_PRELIVE V decide what how to handle -->
-      <p id="sample_db"></p>
-      <li class="list-group-item mt-3 border border-1 shadow-sm" v-show="debug">
+
+      <li id="sample_db" class="list-group-item border border-1 shadow-sm" v-show="debug">
         <a class="h3 text-decoration-none text-dark" href="#sample_db">(Dev) Sample Database</a>
         <div>Populate local database with sample records</div>
         <br />
@@ -463,8 +449,7 @@
         </div>
       </li>
 
-      <p id="image_performance_section"></p>
-      <li class="list-group-item mt-3 border border-1 shadow-sm" v-show="debug">
+      <li id="image_performance_section" class="list-group-item border border-1 shadow-sm" v-show="debug">
         <div class="h3">(Dev) Image performance section</div>
         <a class="btn btn-danger me-2 text-dark" href="#visitor_files">Go up to Visitor files</a>
         <br />

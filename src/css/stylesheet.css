@@ -1,7 +1,36 @@
 body {
-  background: rgb(2, 0, 36);
-  background: linear-gradient(90deg, rgba(2, 0, 36, 1) 0%, rgba(104, 121, 9, 0.3349672632724965) 0%, rgba(0, 212, 255, 0.48062552657781865) 100%);
-  color: rgb(88, 88, 88);
+  background: #f4f6fa;
+  background: linear-gradient(165deg, #eef1f6 0%, #f8f9fa 55%, #eaeff6 100%);
+  background-attachment: fixed;
+  min-height: 100vh;
+  color: #3d4852;
+}
+
+.list-group {
+  gap: 1rem;
+}
+
+.list-group-item[id] {
+  scroll-margin-top: 1.5rem;
+}
+
+.list-group-item {
+  border-radius: 12px;
+  box-shadow: 0 1px 3px rgba(16, 24, 40, 0.08);
+  transition: box-shadow 0.15s ease;
+}
+
+.list-group-item:hover {
+  box-shadow: 0 4px 14px rgba(16, 24, 40, 0.1);
+}
+
+.list-group-item .h3,
+.list-group-item a.h3 {
+  color: #1f2933;
+}
+
+.card {
+  border-radius: 12px;
 }
 
 :popover-open {
